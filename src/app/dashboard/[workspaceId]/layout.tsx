@@ -1,4 +1,5 @@
-import { onAuthenticateUser, verifyWorkspaceAccess } from '@/actions/user'
+import { onAuthenticateUser } from '@/actions/user'
+import { getAllUserVideos, getWorkspaceFolders, getWorkspaceNotifications, getWorkSpaces, verifyWorkspaceAccess } from '@/actions/workspace'
 import { IconLoader3 } from '@tabler/icons-react'
 import { QueryClient } from '@tanstack/react-query'
 import { redirect } from 'next/navigation'
@@ -17,7 +18,7 @@ const Layout = async ({ children, params }: Props) => {
       return redirect('/sign-in')
    }
    const hasAccess = await verifyWorkspaceAccess(params.workspaceId)
-   if (!hasAccess.isUserInWorkspace) {
+   if (!hasAccess.data.workspace) {
       return redirect('/sign-in')
    }
 
@@ -31,15 +32,16 @@ const Layout = async ({ children, params }: Props) => {
       queryKey: ['user-videos'],
       queryFn: () => getAllUserVideos(params.workspaceId)
    })
+   
 
    await query.prefetchQuery({
       queryKey: ['user-workspaces'],
-      queryFn: () => getWorkspaces(params.workspaceId)
+      queryFn: () => getWorkSpaces()
    })
 
    await query.prefetchQuery({
       queryKey: ['user-notifications'],
-      queryFn: () => getWorkspaceNotifications(params.workspaceId)
+      queryFn: () => getWorkspaceNotifications(auth.user.id)
    })
 
   return (
